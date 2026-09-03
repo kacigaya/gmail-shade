@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@source "../../components";
+@source "./";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Only the tokens the popup actually uses. Add one back when a component needs it.
+   The greys and the accent are the ones the content script injects into Gmail. */
+:root {
+    --background: var(--color-white);
+    --border: --alpha(var(--color-black) / 8%);
+    --foreground: #202124;
+    --input: --alpha(var(--color-black) / 10%);
+    --muted-foreground: #5f6368;
+    --primary: #202124;
+    --ring: #8ab4f8;
+}
+
+.dark {
+    --background: #2c2c2c;
+    --border: --alpha(var(--color-white) / 6%);
+    --foreground: #e8eaed;
+    --input: --alpha(var(--color-white) / 8%);
+    --muted-foreground: #b8b8b8;
+    --primary: #e8eaed;
+    --ring: #8ab4f8;
+}
+
+@theme inline {
+    --color-background: var(--background);
+    --color-border: var(--border);
+    --color-foreground: var(--foreground);
+    --color-input: var(--input);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-primary: var(--primary);
+    --color-ring: var(--ring);
+}
+
+/* The popup window sizes itself to <html>, so both elements need the width. */
+html,
+body {
+    width: 320px;
+    min-width: 320px;
+    margin: 0;
+    overflow-x: hidden;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+}
+
+body {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
