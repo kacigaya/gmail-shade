@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <clipPath id="envelope">
+      <rect x="6" y="38" width="188" height="124" rx="22" />
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#envelope)">
+    <rect x="6" y="38" width="94" height="124" fill="#FFFFFF" />
+    <rect x="100" y="38" width="94" height="124" fill="#2C2C2C" />
+    <path d="M6 38 L100 116 L194 38 L194 66 L100 144 L6 66 Z" fill="#EA4335" />
+  </g>
+
+  <rect x="6" y="38" width="188" height="124" rx="22" fill="none" stroke="#747775" stroke-width="6" />
+</svg>
