@@ -19,25 +19,24 @@
 
 ## What it does
 
-Gmail's own dark theme covers the list, the sidebar and the chrome, then stops at the message you
-opened: the reading pane, its subject, its body and the reply bar all stay white. This extension
-styles that pane to match.
+Gmail's dark theme covers the message list, sidebar, and interface, but opened messages still have
+a white reading pane, subject, body, and reply bar. Gmail Shade styles those areas to match.
 
 | Toggle             | Effect                                                                             |
 | ------------------ | ---------------------------------------------------------------------------------- |
 | **Dark messages**  | Pane, subject, body, reply bar and "Show details" popup go `#2c2c2c` on `#e8eaed`   |
 | **In-page toggle** | Shows a sun/moon button in the message toolbar that flips dark messages on and off  |
 
-Both default to on. Settings live in `sync` storage, so the preference follows the Google account
-across machines, and every open Gmail tab reacts to a change without a reload.
+Both settings are on by default. They live in `sync` storage, so preferences follow the Google
+account across machines. Open Gmail tabs pick up changes without a reload.
 
-Links inside message bodies keep Gmail's `#8ab4f8` blue. Action icons, the star, and the reply-bar
-icons are PNGs Gmail ships in black, so they are inverted rather than recoloured.
+Links in message bodies keep Gmail's `#8ab4f8` blue. Gmail ships the action, star, and reply-bar
+icons as black PNGs, so the extension inverts them instead of recolouring them.
 
 ## Install
 
-Chrome and Firefox builds are attached to each [release](https://github.com/kacigaya/gmail-shade/releases).
-To run it unpacked instead:
+Each [release](https://github.com/kacigaya/gmail-shade/releases) includes Chrome and Firefox builds.
+To run an unpacked build:
 
 ```bash
 bun install
@@ -57,36 +56,35 @@ bun run zip          # packaged extension
 
 ## Layout
 
-- `entrypoints/content.ts` injects the stylesheet and mounts the toggle on each mutation sweep
-- `lib/gmail.ts` holds the stylesheet, the toolbar lookup and the button DOM (tested)
+- `entrypoints/content.ts` injects the stylesheet and mounts the toggle during each mutation sweep
+- `lib/gmail.ts` contains the stylesheet, toolbar lookup, and tested button DOM
 - `lib/settings.ts` holds the settings shape, defaults, and storage item
 - `entrypoints/popup/` is the React popup
-- `components/ui/` is the coss ui components
+- `components/ui/` contains the coss UI components
 
 ## Design notes
 
 **The stylesheet is the switch.** Light mode is the absence of rules, not a class on `<html>`, so
-there is no state to keep in sync between the class and the setting. Defaults are dark and the CSS
-is applied before storage is awaited, then reconciled, which keeps the pane from flashing white on
-load.
+there is no class state to synchronize with the setting. The extension applies the dark defaults
+before waiting for storage, then reconciles the saved settings. This prevents a white flash while
+the page loads.
 
-**The button rides Gmail's layout.** It is inserted into the message toolbar rather than positioned
-`fixed` against the print button's bounding box. Nothing polls for its position; a
-`requestAnimationFrame`-coalesced `MutationObserver` re-mounts it when Gmail rebuilds the pane.
+**The button follows Gmail's layout.** The extension inserts it into the message toolbar instead of
+positioning it as `fixed` from the print button's bounding box. A `requestAnimationFrame`-coalesced
+`MutationObserver` remounts it when Gmail rebuilds the pane, with no position polling.
 
-**Icons are built with `createElementNS`.** Gmail sets `require-trusted-types-for 'script'`.
-Isolated worlds are exempt from it today, and building the SVG through the DOM costs nothing while
-removing the dependency on that exemption.
+**Icons use `createElementNS`.** Gmail sets `require-trusted-types-for 'script'`. Isolated worlds
+are currently exempt, but constructing the SVG through the DOM avoids relying on that exemption.
 
 ## Limits
 
-The rules target Gmail's generated class names (`.nH.a98.iY`, `.hx .a3s`, `.btDi4d`). They are
-stable in practice but not contractual, and a Gmail redesign can break them.
+The rules target Gmail's generated class names (`.nH.a98.iY`, `.hx .a3s`, `.btDi4d`). These names
+have been stable in practice, but Gmail does not guarantee them. A redesign may break the styles.
 
-The toolbar anchor is looked up in order: the last action button of the opened message
-(`.hx .gH.acX button[data-tooltip]`), then the print button by `aria-label` in six locales, then
-nothing — in which case the button falls back to a fixed position in the top right corner, the same
-place the userscript this replaces used.
+The extension first looks for the last action button in the opened message
+(`.hx .gH.acX button[data-tooltip]`), then for the print button by `aria-label` in six locales. If
+neither exists, the toggle uses a fixed position in the top-right corner, where the userscript it
+replaces placed it.
 
-Only the reading pane is styled. Everything else is left to Gmail's own dark theme, which has to be
-switched on in Gmail's settings for the result to look right.
+Only the reading pane is styled. Gmail's own dark theme handles the rest and must be enabled in
+Gmail's settings for the extension to look right.
