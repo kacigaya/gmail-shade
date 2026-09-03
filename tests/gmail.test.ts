@@ -158,6 +158,17 @@ describe('syncToggleIcon', () => {
     expect(button.getAttribute('aria-label')).toBe('Switch to dark messages');
   });
 
+  test('repaints only on a real change, so the mutation sweep settles', () => {
+    document.body.innerHTML = TOOLBAR;
+    const button = mountToggle(true, noop)!;
+    const icon = button.querySelector('svg');
+
+    mountToggle(true, noop);
+    syncToggleIcon(true);
+
+    expect(button.querySelector('svg')).toBe(icon);
+  });
+
   test('does nothing when the button is not mounted', () => {
     expect(syncToggleIcon(true)).toBe(false);
   });

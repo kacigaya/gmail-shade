@@ -16,8 +16,11 @@ export default defineContentScript({
 
     // Writing the setting is the whole click handler: the watch below repaints both
     // the stylesheet and the icon, so the button and the popup share one code path.
+    // The local value moves first, so a second click during the storage round-trip
+    // flips back instead of rewriting what the first one already sent.
     const toggleDark = () => {
-      settingsItem.setValue({ ...settings, darkMessages: !settings.darkMessages });
+      settings = { ...settings, darkMessages: !settings.darkMessages };
+      settingsItem.setValue(settings);
     };
 
     let queued = false;
@@ -37,7 +40,7 @@ export default defineContentScript({
     applyCss();
     sweep();
 
-    settingsItem.watch((value) => {
+    const unwatch = settingsItem.watch((value) => {
       settings = withDefaults(value);
       applyCss();
       sweep();
@@ -51,6 +54,7 @@ export default defineContentScript({
     // An extension reload invalidates this context; the observer, stylesheet and
     // button all outlive it.
     ctx.onInvalidated(() => {
+      unwatch();
       observer.disconnect();
       style.remove();
       unmountToggle();

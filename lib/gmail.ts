@@ -256,6 +256,9 @@ function getToggle(root: ParentNode = document): HTMLButtonElement | null {
 export function syncToggleIcon(dark: boolean, root: ParentNode = document) {
   const button = getToggle(root);
   if (!button) return false;
+  // The sweep that calls this is driven by a MutationObserver, so repainting
+  // unconditionally would mutate the DOM on every frame and never settle.
+  if (button.getAttribute('aria-pressed') === String(dark)) return true;
 
   const label = dark ? 'Switch to light messages' : 'Switch to dark messages';
   button.replaceChildren(createIcon(dark ? SUN_ICON : MOON_ICON));
