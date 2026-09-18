@@ -33,6 +33,12 @@ account across machines. Open Gmail tabs pick up changes without a reload.
 Links in message bodies keep Gmail's `#8ab4f8` blue. Gmail ships the action, star, and reply-bar
 icons as black PNGs, so the extension inverts them instead of recolouring them.
 
+Designed emails that paint their own background (a `bgcolor` attribute or an inline `background`
+style) are left with the author's colours inside that block. Forcing light text there would erase
+it on the email's own white card. Text such a block leaves unstyled falls back to Gmail's dark
+default, which is what the author tested against. Plain emails, which paint nothing, get light
+text on the dark pane.
+
 ## Install
 
 Each [release](https://github.com/kacigaya/gmail-shade/releases) includes Chrome and Firefox builds.
@@ -85,6 +91,10 @@ The extension first looks for the last action button in the opened message
 (`.hx .gH.acX button[data-tooltip]`), then for the print button by `aria-label` in six locales. If
 neither exists, the toggle uses a fixed position in the top-right corner, where the userscript it
 replaces placed it.
+
+Backgrounds are detected from attributes and inline styles only. An email that sets a background
+from a `<style>` block still gets light text inside it. Most email builders inline their CSS, so
+this is rare; a computed-style walk of the message body would close the gap at a per-message cost.
 
 Only the reading pane is styled. Gmail's own dark theme handles the rest and must be enabled in
 Gmail's settings for the extension to look right.

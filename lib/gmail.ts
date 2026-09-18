@@ -1,6 +1,16 @@
 import type { Settings } from './settings';
 
 /**
+ * Elements an email paints itself, through a legacy attribute or an inline style.
+ * Designed emails bring their own card and text colours; forcing light text inside
+ * a white card erases it, so these subtrees keep the author's colours.
+ *
+ * Backgrounds set from a <style> block are not detected; see README "Limits".
+ */
+const PAINTED = '[bgcolor], [background], [style*="background"]';
+const AUTHOR_STYLED = `${PAINTED}, :is(${PAINTED}) *`;
+
+/**
  * Static rules per feature, injected as one stylesheet built from the enabled ones.
  *
  * Gmail's own dark theme already covers the list, the sidebar and the chrome; only
@@ -41,30 +51,40 @@ export const CSS: Record<keyof Settings, string> = {
       color: #e8eaed !important;
     }
 
-    /* Email body text */
+    /* Email body text, outside anything the email paints itself */
     .hx .a3s,
-    .hx .a3s div,
-    .hx .a3s span,
-    .hx .a3s p,
-    .hx .a3s td,
-    .hx .a3s th,
-    .hx .a3s li,
-    .hx .a3s b,
-    .hx .a3s strong,
-    .hx .a3s h1,
-    .hx .a3s h2,
-    .hx .a3s h3,
-    .hx .a3s h4,
-    .hx .a3s h5,
-    .hx .a3s h6 {
+    .hx .a3s :not(a, a *, ${AUTHOR_STYLED}) {
       color: #e8eaed !important;
     }
 
     /* Keep links blue */
-    .hx .a3s a,
-    .hx .a3s a span,
-    .hx .a3s a:visited {
+    .hx .a3s :is(a, a *):not(${AUTHOR_STYLED}) {
       color: #8ab4f8 !important;
+    }
+
+    /* A painted block was designed against Gmail's white pane, so text it leaves
+       unstyled falls back to Gmail's dark default instead of inheriting ours.
+       Outermost only: nested blocks inherit whatever the author set above them. */
+    .hx .a3s :is(${PAINTED}):not(:is(${PAINTED}) *) {
+      color: #222;
+    }
+
+    /* Attachment header: count, "Scanned by Gmail", "Add to Drive". The chips
+       (.aZo) draw their own light card, so they keep Gmail's colours. */
+    .hx .hq.gt :not(.aZo, .aZo *) {
+      color: #e8eaed !important;
+    }
+
+    .hx .hq.gt .aZo {
+      color: #202124;
+    }
+
+    .hx .hq.gt svg:not(.aZo *) {
+      fill: #e8eaed !important;
+    }
+
+    .hx .hq.gt img:not(.aZo *) {
+      filter: invert(1) brightness(1.4) !important;
     }
 
     /* Final reply bar fix */

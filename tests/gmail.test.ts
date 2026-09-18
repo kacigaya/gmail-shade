@@ -44,6 +44,14 @@ describe('buildCss', () => {
     expect(css).toContain('#8ab4f8');
   });
 
+  // happy-dom cannot match complex selectors inside :not(), so the painted-block
+  // exclusion is only checked as text here; its behaviour is verified in Chromium.
+  test('leaves painted email blocks and attachment chips with their own colours', () => {
+    const css = buildCss(only('darkMessages'));
+    expect(css).toContain(':not(a, a *, [bgcolor], [background], [style*="background"]');
+    expect(css).toContain('.hx .hq.gt :not(.aZo, .aZo *)');
+  });
+
   test('is empty when dark messages are off', () => {
     expect(buildCss(only('showToggle')).trim()).toBe('');
     expect(buildCss(only()).trim()).toBe('');
