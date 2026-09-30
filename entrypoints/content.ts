@@ -1,63 +1,103 @@
-import { DEFAULT_SETTINGS, getSettings, settingsItem, type Settings, withDefaults } from '@/lib/settings';
-import { buildCss, mountToggle, unmountToggle } from '@/lib/gmail';
+import { defineContentScript } from 'wxt/utils/define-content-script';
+import { createSettingsController, DEFAULT_SETTINGS, type SettingsState } from '@/lib/settings';
+import { buildCss, mountToggle, showSettingsError, unmountToggle } from '@/lib/gmail';
+import { classifyMessageBackgrounds, clearMessageBackgrounds } from '@/lib/message-backgrounds';
 
 export default defineContentScript({
   matches: ['*://mail.google.com/*'],
   runAt: 'document_start',
 
-  async main(ctx) {
-    let settings: Settings = DEFAULT_SETTINGS;
-
+  main(ctx) {
+    let state: SettingsState = { settings: DEFAULT_SETTINGS, loaded: false, error: null };
+    let disposed = false;
+    let frame: number | undefined;
+    let controller: ReturnType<typeof createSettingsController> | undefined;
+    const dirtyBodies = new Set<HTMLElement>();
     const style = document.createElement('style');
-    (document.head ?? document.documentElement).append(style);
+    style.setAttribute('data-gmail-shade', '');
     const applyCss = () => {
-      style.textContent = buildCss(settings);
+      const css = buildCss(state.settings);
+      if (style.textContent !== css) style.textContent = css;
     };
-
-    // Writing the setting is the whole click handler: the watch below repaints both
-    // the stylesheet and the icon, so the button and the popup share one code path.
-    // The local value moves first, so a second click during the storage round-trip
-    // flips back instead of rewriting what the first one already sent.
     const toggleDark = () => {
-      settings = { ...settings, darkMessages: !settings.darkMessages };
-      settingsItem.setValue(settings);
+      if (!controller?.state.loaded) { void controller?.load(); return; }
+      controller.set('darkMessages', !state.settings.darkMessages);
     };
-
-    let queued = false;
+    const markAllBodies = () => {
+      for (const body of document.querySelectorAll<HTMLElement>('.hx .a3s')) dirtyBodies.add(body);
+    };
+    const observe = () => observer.observe(document.documentElement, {
+      childList: true, subtree: true, attributes: true,
+      attributeFilter: ['class', 'id', 'style', 'bgcolor', 'background', 'href', 'rel', 'media', 'disabled'],
+    });
     const sweep = () => {
-      if (queued) return;
-      queued = true;
-      requestAnimationFrame(() => {
-        queued = false;
-        if (settings.showToggle) mountToggle(settings.darkMessages, toggleDark);
-        else unmountToggle();
+      if (disposed || ctx.isInvalid || frame !== undefined) return;
+      frame = requestAnimationFrame(() => {
+        frame = undefined;
+        if (disposed || ctx.isInvalid) return;
+        // Our markers, styles and button must not schedule another observer sweep.
+        observer.disconnect();
+        try {
+          if (state.settings.darkMessages) {
+            if (dirtyBodies.size) classifyMessageBackgrounds(dirtyBodies, style);
+          } else clearMessageBackgrounds();
+          dirtyBodies.clear();
+          if (state.settings.showToggle) mountToggle(state.settings.darkMessages, toggleDark);
+          else unmountToggle();
+          const error = state.error && (!state.loaded
+            ? 'Could not load settings. Click the sun/moon button or open the popup to retry.'
+            : state.error);
+          showSettingsError(error);
+        } finally {
+          if (!disposed && !ctx.isInvalid) observe();
+        }
       });
     };
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        const target = record.target instanceof Element ? record.target : record.target.parentElement;
+        if (target?.closest('[data-gmail-shade]')) continue;
+        const body = target?.closest<HTMLElement>('.hx .a3s');
+        if (body) dirtyBodies.add(body);
+        if (target instanceof HTMLElement) {
+          for (const child of target.querySelectorAll<HTMLElement>('.hx .a3s')) dirtyBodies.add(child);
+        }
+        // Style rules can change backgrounds without changing message markup.
+        if (target?.closest('style') || target instanceof HTMLLinkElement || [...record.addedNodes, ...record.removedNodes].some((node) =>
+          node instanceof Element && (node.matches('style, link[rel="stylesheet"]') || node.querySelector('style, link[rel="stylesheet"]')),
+        )) markAllBodies();
+      }
+      sweep();
+    });
+    ctx.onInvalidated(() => {
+      disposed = true;
+      controller?.dispose();
+      if (frame !== undefined) cancelAnimationFrame(frame);
+      observer.disconnect();
+      dirtyBodies.clear();
+      style.remove();
+      clearMessageBackgrounds();
+      unmountToggle();
+      showSettingsError(null);
+    });
+    if (ctx.isInvalid) return;
 
-    // Defaults are dark, so darken first and reconcile once storage answers.
+    (document.head ?? document.documentElement).append(style);
     applyCss();
-    settings = await getSettings();
-    applyCss();
-    sweep();
-
-    const unwatch = settingsItem.watch((value) => {
-      settings = withDefaults(value);
+    markAllBodies();
+    observe();
+    ctx.addEventListener(window, 'resize', () => { markAllBodies(); sweep(); });
+    ctx.addEventListener(document, 'load', (event) => {
+      if (event.target instanceof HTMLLinkElement) { markAllBodies(); sweep(); }
+    }, { capture: true });
+    controller = createSettingsController((next) => {
+      if (disposed || ctx.isInvalid) return;
+      if (next.settings.darkMessages !== state.settings.darkMessages) markAllBodies();
+      state = next;
       applyCss();
       sweep();
     });
-
-    // Gmail rebuilds the reading pane on every message it opens, which is what
-    // re-mounts the button; coalescing to a frame keeps that off the mutation path.
-    const observer = new MutationObserver(sweep);
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-
-    // An extension reload invalidates this context; the observer, stylesheet and
-    // button all outlive it.
-    ctx.onInvalidated(() => {
-      unwatch();
-      observer.disconnect();
-      style.remove();
-      unmountToggle();
-    });
+    void controller.load();
+    sweep();
   },
 });

@@ -44,11 +44,10 @@ describe('buildCss', () => {
     expect(css).toContain('#8ab4f8');
   });
 
-  // happy-dom cannot match complex selectors inside :not(), so the painted-block
-  // exclusion is only checked as text here; its behaviour is verified in Chromium.
+  // Computed foreground/background behavior is covered by test:browser.
   test('leaves painted email blocks and attachment chips with their own colours', () => {
     const css = buildCss(only('darkMessages'));
-    expect(css).toContain(':not(a, a *, [bgcolor], [background], [style*="background"]');
+    expect(css).toContain(':not(a, a *, [data-gmail-shade-painted]');
     expect(css).toContain('.hx .hq.gt :not(.aZo, .aZo *)');
   });
 
@@ -163,7 +162,7 @@ describe('syncToggleIcon', () => {
     expect(button.querySelectorAll('svg')).toHaveLength(1);
     expect(button.querySelector('path')!.getAttribute('d')).toBe(MOON_ICON.path);
     expect(button.getAttribute('aria-pressed')).toBe('false');
-    expect(button.getAttribute('aria-label')).toBe('Switch to dark messages');
+    expect(button.getAttribute('aria-label')).toBe('Dark messages');
   });
 
   test('repaints only on a real change, so the mutation sweep settles', () => {

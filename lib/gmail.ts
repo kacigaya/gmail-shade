@@ -1,13 +1,12 @@
 import type { Settings } from './settings';
+import { AUTHOR_COLOR_PROPERTY, PAINTED_ATTRIBUTE } from './message-backgrounds';
 
 /**
- * Elements an email paints itself, through a legacy attribute or an inline style.
+ * Elements whose computed background paints a card, image or gradient.
  * Designed emails bring their own card and text colours; forcing light text inside
  * a white card erases it, so these subtrees keep the author's colours.
- *
- * Backgrounds set from a <style> block are not detected; see README "Limits".
  */
-const PAINTED = '[bgcolor], [background], [style*="background"]';
+const PAINTED = `[${PAINTED_ATTRIBUTE}]`;
 const AUTHOR_STYLED = `${PAINTED}, :is(${PAINTED}) *`;
 
 /**
@@ -52,7 +51,7 @@ export const CSS: Record<keyof Settings, string> = {
     }
 
     /* Email body text, outside anything the email paints itself */
-    .hx .a3s,
+    .hx .a3s:not(${PAINTED}),
     .hx .a3s :not(a, a *, ${AUTHOR_STYLED}) {
       color: #e8eaed !important;
     }
@@ -62,11 +61,11 @@ export const CSS: Record<keyof Settings, string> = {
       color: #8ab4f8 !important;
     }
 
-    /* A painted block was designed against Gmail's white pane, so text it leaves
-       unstyled falls back to Gmail's dark default instead of inheriting ours.
-       Outermost only: nested blocks inherit whatever the author set above them. */
+    /* Restore the original inherited colour at the outermost painted block.
+       Descendants still use the author's own inline and stylesheet colours. */
+    .hx .a3s:is(${PAINTED}),
     .hx .a3s :is(${PAINTED}):not(:is(${PAINTED}) *) {
-      color: #222;
+      color: var(${AUTHOR_COLOR_PROPERTY}, #222);
     }
 
     /* Attachment header: count, "Scanned by Gmail", "Add to Drive". The chips
@@ -282,7 +281,8 @@ export function syncToggleIcon(dark: boolean, root: ParentNode = document) {
 
   const label = dark ? 'Switch to light messages' : 'Switch to dark messages';
   button.replaceChildren(createIcon(dark ? SUN_ICON : MOON_ICON));
-  button.setAttribute('aria-label', label);
+  // A toggle keeps a stable name; aria-pressed communicates its current state.
+  button.setAttribute('aria-label', 'Dark messages');
   button.title = label;
   button.setAttribute('aria-pressed', String(dark));
   return true;
@@ -376,4 +376,29 @@ export function unmountToggle(root: ParentNode = document) {
   if (!button) return false;
   button.remove();
   return true;
+}
+
+/** Keep failed storage operations visible even when Gmail has no message toolbar. */
+export function showSettingsError(message: string | null) {
+  const id = 'gmail-shade-error';
+  let notice = document.getElementById(id);
+  if (!message) {
+    notice?.remove();
+    return;
+  }
+  if (!document.body) return;
+  if (!notice) {
+    notice = document.createElement('p');
+    notice.id = id;
+    notice.setAttribute(MARK, '');
+    notice.setAttribute('role', 'alert');
+    Object.assign(notice.style, {
+      position: 'fixed', top: '115px', right: '24px', zIndex: '999999',
+      maxWidth: '280px', margin: '0', padding: '12px', borderRadius: '4px',
+      background: '#2c2c2c', color: '#e8eaed', border: '1px solid #747775',
+      font: '13px/1.5 system-ui, sans-serif',
+    });
+    document.body.append(notice);
+  }
+  if (notice.textContent !== message) notice.textContent = message;
 }

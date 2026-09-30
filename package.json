@@ -13,7 +13,16 @@
     "zip:firefox": "wxt zip -b firefox",
     "compile": "tsc --noEmit",
     "postinstall": "wxt prepare",
-    "test": "bun test"
+    "test": "bun test",
+    "test:browser": "bun scripts/test-browser.ts",
+    "lint:firefox": "web-ext lint --source-dir .output/firefox-mv2"
+  },
+  "overrides": {
+    "adm-zip": "0.6.1",
+    "brace-expansion": "1.1.21",
+    "fast-uri": "3.1.8",
+    "image-size": "2.0.3",
+    "undici": "7.29.1"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

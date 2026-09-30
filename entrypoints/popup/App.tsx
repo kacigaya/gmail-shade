@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { DEFAULT_SETTINGS, getSettings, settingsItem, type Settings } from '@/lib/settings';
+import { createSettingsController, DEFAULT_SETTINGS, type Settings, type SettingsState } from '@/lib/settings';
 
 const TOGGLES: { key: keyof Settings; title: string; description: string }[] = [
   {
@@ -18,20 +18,24 @@ const TOGGLES: { key: keyof Settings; title: string; description: string }[] = [
 ];
 
 function App() {
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [loaded, setLoaded] = useState(false);
+  const [state, setState] = useState<SettingsState>({
+    settings: DEFAULT_SETTINGS, loaded: false, error: null,
+  });
+  const controller = useRef<ReturnType<typeof createSettingsController> | null>(null);
+  const { settings, loaded, error } = state;
 
   useEffect(() => {
-    getSettings().then((value) => {
-      setSettings(value);
-      setLoaded(true);
-    });
+    const current = createSettingsController(setState);
+    controller.current = current;
+    void current.load();
+    return () => {
+      current.dispose();
+      controller.current = null;
+    };
   }, []);
 
   const toggle = (key: keyof Settings, checked: boolean) => {
-    const next = { ...settings, [key]: checked };
-    setSettings(next);
-    settingsItem.setValue(next);
+    controller.current?.set(key, checked);
   };
 
   return (
@@ -43,7 +47,7 @@ function App() {
         </p>
       </header>
       <Separator />
-      <div className="flex flex-col px-4">
+      <div className="flex flex-col px-4" aria-busy={!loaded && !error}>
         {TOGGLES.map(({ key, title, description }, index) => (
           <div key={key}>
             {index > 0 && <Separator />}
@@ -61,6 +65,20 @@ function App() {
           </div>
         ))}
       </div>
+      {error && (
+        <div className="px-4 pb-3 text-xs">
+          <p role="alert">{error}</p>
+          {!loaded && (
+            <button
+              type="button"
+              className="mt-2 rounded px-2 py-1 underline focus-visible:outline-2 focus-visible:outline-ring"
+              onClick={() => { void controller.current?.load(); }}
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      )}
     </main>
   );
 }
