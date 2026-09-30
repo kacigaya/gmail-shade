@@ -22,6 +22,7 @@ export default defineConfig({
       ? {
           browser_specific_settings: {
             gecko: {
+              id: 'gmail-shade@kacigaya',
               data_collection_permissions: {
                 required: ['none'] as const,
               },

@@ -15,16 +15,18 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.14
 
       - run: bun install --frozen-lockfile
 
       # Ship nothing that fails the same checks used locally.
       - run: bun test
       - run: bun run compile
+      - run: bun run test:browser
 
       - run: bun run zip
       - run: bun run zip:firefox
+      - run: bun run lint:firefox
 
       # Named explicitly rather than globbed, so re-enabling zip.zipSources in
       # wxt.config.ts cannot quietly start publishing a sources zip.
