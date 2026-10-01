@@ -1,15 +1,17 @@
-name: Validate
+name: Dependency audit
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
+  schedule:
+    - cron: '17 8 * * 1'
 
 permissions:
   contents: read
 
 jobs:
-  validate:
+  audit:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
@@ -17,10 +19,4 @@ jobs:
         with:
           bun-version-file: .bun-version
       - run: bun install --frozen-lockfile
-      - run: bun test
-      - run: bun run compile
-      - run: bun run test:browser
-      - run: bun run zip
-      - run: bun run zip:firefox
-      - run: bun run lint:firefox
-      - run: bun run test:firefox
+      - run: bun run audit:deps

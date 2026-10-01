@@ -54,7 +54,7 @@ bun run build     # .output/chrome-mv3, load unpacked at chrome://extensions
 ## Develop
 
 ```bash
-bun install --frozen-lockfile  # Bun 1.3.14
+bun install --frozen-lockfile  # Bun 1.4.2, pinned in .bun-version
 bun run dev          # Chrome; `bun run dev:firefox` for Firefox
 bun test             # DOM, settings races, storage errors, lifecycle cleanup
 bun run test:browser # Computed styles and popup behavior in Chrome/Chromium
@@ -63,11 +63,34 @@ bun run build        # .output/chrome-mv3
 bun run zip          # packaged Chrome extension
 bun run zip:firefox   # packaged Firefox extension
 bun run lint:firefox  # Validate the built Firefox extension
+bun run test:firefox  # Native Firefox extension, sync storage, popup, and content script
+bun run audit:deps    # Exact public dependency versions checked against OSV
 ```
 
 Browser tests require Chrome/Chromium on `PATH` or a Playwright Chromium cache. Set `CHROME_PATH`
 to select an executable. They run a local fixture with a controlled storage API; no Gmail login
-or network service is needed. Pull requests and release uploads run all these validation checks.
+or network service is needed. Native Firefox tests require Node 20+ and Firefox on `PATH` or `FIREFOX_PATH`,
+run on Linux/macOS, and use a fresh temporary profile. They test the built popup and content
+script with real browser storage; only a disposable copy receives localhost test permissions.
+Pull requests run these validation checks. See [the Gmail checklist](tests/GMAIL.md) for
+verification against a signed-in mailbox; fixture tests cannot detect Gmail selector changes.
+
+The dependency audit runs for pull requests, pushes to main, and weekly. It sends only exact
+public npm package names and versions from `bun.lock` to OSV, including development and optional
+dependencies. Workspace and custom-registry packages are excluded. Active advisories fail the
+check; API failures also fail instead of reporting a clean scan. Advisory coverage is limited
+to OSV's database and does not establish whether a vulnerability is reachable in this extension.
+
+## Release
+
+Update `package.json`'s stable version, validate, commit, and push to main. Push a matching
+`vX.Y.Z` tag on that commit to start the release workflow. The workflow runs all tests, builds
+both ZIPs, validates Firefox, and audits dependencies before creating a draft release. It
+uploads the two exact browser ZIPs, checks their names, sizes, upload state, and GitHub-provided
+digests when available, then publishes. An upload failure leaves a draft; rerunning the failed
+workflow can resume it. Published releases and drafts targeting another commit are rejected.
+Do not publish a release manually before this gate finishes. The workflow supports stable
+versions only; prerelease policy needs a separate change.
 
 ## Layout
 
