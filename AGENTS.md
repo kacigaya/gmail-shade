@@ -8,7 +8,7 @@
   `bun run zip:firefox`, `bun run lint:firefox`, `bun run test:firefox`, and `bun run audit:deps`.
 - Browser tests need Chrome/Chromium on PATH, in the Playwright cache, or at `CHROME_PATH`.
   The fixture uses a controlled browser storage API and needs no Gmail account.
-- Native Firefox tests require Firefox on PATH or at `FIREFOX_PATH` and a built
+- Native Firefox tests require Node 20+, Firefox on PATH or at `FIREFOX_PATH`, and a built
   `.output/firefox-mv2`. They install a disposable test copy with real sync storage.
   The process runner supports Linux/macOS. Live Gmail checks are in `tests/GMAIL.md`.
 - Builds: `.output/chrome-mv3` and `.output/firefox-mv2`. ZIPs live in `.output`.

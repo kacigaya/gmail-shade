@@ -69,7 +69,7 @@ bun run audit:deps    # Exact public dependency versions checked against OSV
 
 Browser tests require Chrome/Chromium on `PATH` or a Playwright Chromium cache. Set `CHROME_PATH`
 to select an executable. They run a local fixture with a controlled storage API; no Gmail login
-or network service is needed. Native Firefox tests require Firefox on `PATH` or `FIREFOX_PATH`,
+or network service is needed. Native Firefox tests require Node 20+ and Firefox on `PATH` or `FIREFOX_PATH`,
 run on Linux/macOS, and use a fresh temporary profile. They test the built popup and content
 script with real browser storage; only a disposable copy receives localhost test permissions.
 Pull requests run these validation checks. See [the Gmail checklist](tests/GMAIL.md) for

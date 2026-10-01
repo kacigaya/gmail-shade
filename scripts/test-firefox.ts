@@ -48,7 +48,9 @@ try {
   manifest.content_scripts.push({ matches: ['http://127.0.0.1/*'], js: ['native-tests/content.js'], run_at: 'document_idle' });
   await Bun.write(manifestFile, JSON.stringify(manifest));
   const popupFile = Bun.file(join(directory, 'popup.html'));
-  await Bun.write(popupFile, (await popupFile.text()).replace('</body>', '<script src="native-tests/popup.js"></script></body>'));
+  const popupHtml = await popupFile.text();
+  if (!popupHtml.includes('</body>')) throw new Error('Popup test injection failed: closing body tag missing');
+  await Bun.write(popupFile, popupHtml.replace('</body>', '<script src="native-tests/popup.js"></script></body>'));
   child = spawn('node', ['node_modules/web-ext/bin/web-ext.js', 'run', `--source-dir=${directory}`, `--firefox=${executable}`, `--firefox-profile=${join(directory, 'profile')}`, '--profile-create-if-missing', '--keep-profile-changes', '--no-reload', '--no-input', '--no-config-discovery', '--args=-headless', '--pref=ui.prefersReducedMotion=1'], { detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   child.stdout?.on('data', (data) => { output += String(data); });
