@@ -42,6 +42,7 @@ void (async () => {
     check(saved.settings !== null && typeof saved.settings === 'object' && 'darkMessages' in saved.settings && saved.settings.darkMessages === false, 'Legacy settings were overwritten');
     await browser.storage.sync.set({ darkMessages: true, showToggle: true });
     const popup = await open('popup', browser.runtime.getURL('/popup.html'));
+    await browser.storage.sync.set({ darkMessages: false, showToggle: false });
     const content = await open('content', TEST_URL);
     result = `${assertionCount() + popup + content} native Firefox assertions passed`;
   } catch (error) {

@@ -2,7 +2,7 @@ import { browser } from 'wxt/browser';
 import { check, report, waitFor } from './helpers';
 
 void report('popup', async () => {
-  await waitFor(() => document.querySelectorAll('[role=switch]').length === 2 && !document.querySelector('[role=switch][disabled]'), 'Popup did not load native settings');
+  await waitFor(() => document.querySelectorAll('[role=switch]').length === 2 && !document.querySelector('[aria-busy=true]') && !document.querySelector('[role=switch][disabled], [role=switch][aria-disabled=true]'), 'Popup did not load native settings');
   const switches = document.querySelectorAll<HTMLElement>('[role=switch]');
   check(switches[0]!.getAttribute('aria-checked') === 'true', 'Popup did not read sync storage');
   await browser.storage.sync.set({ darkMessages: false });
