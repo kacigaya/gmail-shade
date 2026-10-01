@@ -1,6 +1,6 @@
 import { browser } from 'wxt/browser';
 import { createSettingsController } from '@/lib/settings';
-import { check, waitFor } from './helpers';
+import { assertionCount, check, waitFor } from './helpers';
 
 declare const TEST_URL: string;
 const phases = new Map<string, (message: { assertions: number; error?: string }) => void>();
@@ -43,7 +43,7 @@ void (async () => {
     await browser.storage.sync.set({ darkMessages: true, showToggle: true });
     const popup = await open('popup', browser.runtime.getURL('/popup.html'));
     const content = await open('content', TEST_URL);
-    result = `${4 + popup + content} native Firefox assertions passed`;
+    result = `${assertionCount() + popup + content} native Firefox assertions passed`;
   } catch (error) {
     result = String(error);
   } finally {

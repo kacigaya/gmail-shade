@@ -34,7 +34,13 @@ try {
   });
   if (!build.success) throw new AggregateError(build.logs, 'Firefox test build failed');
   const manifestFile = Bun.file(join(directory, 'manifest.json'));
-  const manifest = await manifestFile.json();
+  const manifest: {
+    manifest_version: number;
+    permissions?: string[];
+    background?: { scripts: string[] };
+    content_scripts?: { matches: string[]; js: string[]; run_at?: string }[];
+  } = await manifestFile.json();
+  if (manifest.manifest_version !== 2 || !manifest.permissions || !manifest.content_scripts?.[0]) throw new Error('Expected the built Firefox MV2 manifest');
   // Only the disposable test copy can access the local fixture.
   manifest.permissions.push('http://127.0.0.1/*');
   manifest.background = { scripts: ['native-tests/background.js'] };
@@ -43,7 +49,7 @@ try {
   await Bun.write(manifestFile, JSON.stringify(manifest));
   const popupFile = Bun.file(join(directory, 'popup.html'));
   await Bun.write(popupFile, (await popupFile.text()).replace('</body>', '<script src="native-tests/popup.js"></script></body>'));
-  child = spawn('node', ['node_modules/web-ext/bin/web-ext.js', 'run', `--source-dir=${directory}`, `--firefox=${executable}`, '--no-reload', '--no-input', '--no-config-discovery', '--args=-headless', '--pref=ui.prefersReducedMotion=1'], { detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  child = spawn('node', ['node_modules/web-ext/bin/web-ext.js', 'run', `--source-dir=${directory}`, `--firefox=${executable}`, `--firefox-profile=${join(directory, 'profile')}`, '--profile-create-if-missing', '--keep-profile-changes', '--no-reload', '--no-input', '--no-config-discovery', '--args=-headless', '--pref=ui.prefersReducedMotion=1'], { detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   child.stdout?.on('data', (data) => { output += String(data); });
   child.stderr?.on('data', (data) => { output += String(data); });

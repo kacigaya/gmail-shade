@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 
 let assertions = 0;
+export const assertionCount = () => assertions;
 export function check(condition: boolean, message: string) {
   if (!condition) throw new Error(message);
   assertions++;
