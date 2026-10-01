@@ -35,9 +35,9 @@ export async function publishRelease(options: { tag: string; version: string; re
   // drafts remain visible both immediately after creation and on retries.
   const endpoint = `repos/${repo}/releases?per_page=100`;
   const read = async () => {
-    const pages: unknown = JSON.parse((await checked(['gh', 'api', '--paginate', '--slurp', endpoint])).stdout);
-    if (!Array.isArray(pages) || !pages.every(Array.isArray)) throw new Error('Invalid GitHub release list');
-    const matches = pages.flat().filter((value: unknown) => value && typeof value === 'object' && 'tag_name' in value && value.tag_name === tag);
+    const output = (await checked(['gh', 'api', '--paginate', endpoint, '--jq', '.[] | @json'])).stdout;
+    const values: unknown[] = output.split('\n').filter((line) => line.trim()).map((line) => JSON.parse(line));
+    const matches = values.filter((value) => value && typeof value === 'object' && 'tag_name' in value && value.tag_name === tag);
     if (matches.length > 1) throw new Error('Multiple releases found for the tag');
     return matches.length ? release(matches[0]) : undefined;
   };

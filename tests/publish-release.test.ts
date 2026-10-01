@@ -15,7 +15,7 @@ function fixture(config: { published?: boolean; existingDraft?: boolean; wrongCo
     if (args[1] === 'api') {
       if (config.networkFailure) return { code: 1, stdout: '', stderr: 'network unavailable' };
       if (args[2]?.includes('/commits/')) return { code: 0, stdout: config.movedTag && uploaded ? 'b'.repeat(40) : options.sha, stderr: '' };
-      return { code: 0, stderr: '', stdout: JSON.stringify([exists ? [{ draft, tag_name: options.tag, target_commitish: config.wrongCommit ? 'b'.repeat(40) : options.sha, assets: uploaded ? options.artifacts.slice(0, config.missingAsset ? 1 : 2).map((asset) => ({ name: asset.path.split('/').pop(), size: asset.size, state: 'uploaded', digest: config.wrongDigest ? 'sha256:wrong' : asset.digest })) : [] }] : []]) };
+      return { code: 0, stderr: '', stdout: exists ? JSON.stringify({ draft, tag_name: options.tag, target_commitish: config.wrongCommit ? 'b'.repeat(40) : options.sha, assets: uploaded ? options.artifacts.slice(0, config.missingAsset ? 1 : 2).map((asset) => ({ name: asset.path.split('/').pop(), size: asset.size, state: 'uploaded', digest: config.wrongDigest ? 'sha256:wrong' : asset.digest })) : [] }) : '' };
     }
     if (args[2] === 'create') exists = true;
     if (args[2] === 'upload') {
