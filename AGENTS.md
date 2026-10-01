@@ -4,7 +4,7 @@
 - Package manager/runtime: Bun 1.3.14. Install with `bun install --frozen-lockfile`.
 - Development: `bun run dev` for Chrome; `bun run dev:firefox` for Firefox.
 - Validation: `bun test`, `bun run compile`, `bun run test:browser`, `bun run zip`,
-  `bun run zip:firefox`, `bun run lint:firefox`, then `bun run test:firefox`.
+  `bun run zip:firefox`, `bun run lint:firefox`, `bun run test:firefox`, and `bun run audit:deps`.
 - Browser tests need Chrome/Chromium on PATH, in the Playwright cache, or at `CHROME_PATH`.
   The fixture uses a controlled browser storage API and needs no Gmail account.
 - Native Firefox tests require Firefox on PATH or at `FIREFOX_PATH` and a built

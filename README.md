@@ -64,6 +64,7 @@ bun run zip          # packaged Chrome extension
 bun run zip:firefox   # packaged Firefox extension
 bun run lint:firefox  # Validate the built Firefox extension
 bun run test:firefox  # Native Firefox extension, sync storage, popup, and content script
+bun run audit:deps    # Exact public dependency versions checked against OSV
 ```
 
 Browser tests require Chrome/Chromium on `PATH` or a Playwright Chromium cache. Set `CHROME_PATH`
@@ -73,6 +74,12 @@ run on Linux/macOS, and use a fresh temporary profile. They test the built popup
 script with real browser storage; only a disposable copy receives localhost test permissions.
 Pull requests run these validation checks. See [the Gmail checklist](tests/GMAIL.md) for
 verification against a signed-in mailbox; fixture tests cannot detect Gmail selector changes.
+
+The dependency audit runs for pull requests, pushes to main, and weekly. It sends only exact
+public npm package names and versions from `bun.lock` to OSV, including development and optional
+dependencies. Workspace and custom-registry packages are excluded. Active advisories fail the
+check; API failures also fail instead of reporting a clean scan. Advisory coverage is limited
+to OSV's database and does not establish whether a vulnerability is reachable in this extension.
 
 ## Layout
 

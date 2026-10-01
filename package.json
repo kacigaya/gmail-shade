@@ -16,6 +16,7 @@
     "test": "bun test",
     "test:browser": "bun scripts/test-browser.ts",
     "test:firefox": "bun scripts/test-firefox.ts",
+    "audit:deps": "bun scripts/audit-deps.ts",
     "lint:firefox": "web-ext lint --source-dir .output/firefox-mv2"
   },
   "overrides": {
