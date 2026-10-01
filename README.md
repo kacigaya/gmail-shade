@@ -81,6 +81,17 @@ dependencies. Workspace and custom-registry packages are excluded. Active adviso
 check; API failures also fail instead of reporting a clean scan. Advisory coverage is limited
 to OSV's database and does not establish whether a vulnerability is reachable in this extension.
 
+## Release
+
+Update `package.json`'s stable version, validate, commit, and push to main. Push a matching
+`vX.Y.Z` tag on that commit to start the release workflow. The workflow runs all tests, builds
+both ZIPs, validates Firefox, and audits dependencies before creating a draft release. It
+uploads the two exact browser ZIPs, checks their names, sizes, upload state, and GitHub-provided
+digests when available, then publishes. An upload failure leaves a draft; rerunning the failed
+workflow can resume it. Published releases and drafts targeting another commit are rejected.
+Do not publish a release manually before this gate finishes. The workflow supports stable
+versions only; prerelease policy needs a separate change.
+
 ## Layout
 
 - `entrypoints/content.ts` injects the stylesheet and mounts the toggle during each mutation sweep

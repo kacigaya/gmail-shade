@@ -14,5 +14,7 @@
 - Firefox extension ID: `gmail-shade@kacigaya`. Preserve it across builds and signing.
 - Settings use independent sync keys `darkMessages` and `showToggle`; legacy `settings`
   remains a read-only fallback. Do not write entire settings objects.
-- CI validates PRs and pushes to main. Publishing a GitHub release validates and uploads
-  both browser ZIPs. No application server or production service is configured.
+- CI validates PRs and pushes to main; OSV audits also run weekly.
+- Pushing a stable `vX.Y.Z` tag matching `package.json` triggers release validation.
+  The commit must be on main. Both ZIPs upload to a draft and are verified before
+  publication. Do not manually publish an empty release. No application server is configured.

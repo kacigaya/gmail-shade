@@ -1,8 +1,12 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: ['v*']
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -12,6 +16,8 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -27,11 +33,10 @@ jobs:
       - run: bun run zip
       - run: bun run zip:firefox
       - run: bun run lint:firefox
+      - run: bun run test:firefox
+      - run: bun run audit:deps
 
-      # Named explicitly rather than globbed, so re-enabling zip.zipSources in
-      # wxt.config.ts cannot quietly start publishing a sources zip.
-      - uses: softprops/action-gh-release@v3
-        with:
-          files: |
-            .output/*-chrome.zip
-            .output/*-firefox.zip
+      # Upload to a draft, verify both exact ZIPs, then publish.
+      - run: bun scripts/publish-release.ts
+        env:
+          GH_TOKEN: ${{ github.token }}
