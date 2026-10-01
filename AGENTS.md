@@ -1,7 +1,8 @@
 # Project facts
 
 - Browser extension using WXT 0.21, React 19, TypeScript, and Tailwind CSS 4.
-- Package manager/runtime: Bun 1.3.14. Install with `bun install --frozen-lockfile`.
+- Package manager/runtime: Bun 1.4.2, pinned in `.bun-version` and matching `@types/bun`.
+  Install with `bun install --frozen-lockfile`.
 - Development: `bun run dev` for Chrome; `bun run dev:firefox` for Firefox.
 - Validation: `bun test`, `bun run compile`, `bun run test:browser`, `bun run zip`,
   `bun run zip:firefox`, `bun run lint:firefox`, `bun run test:firefox`, and `bun run audit:deps`.

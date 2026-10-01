@@ -54,7 +54,7 @@ bun run build     # .output/chrome-mv3, load unpacked at chrome://extensions
 ## Develop
 
 ```bash
-bun install --frozen-lockfile  # Bun 1.3.14
+bun install --frozen-lockfile  # Bun 1.4.2, pinned in .bun-version
 bun run dev          # Chrome; `bun run dev:firefox` for Firefox
 bun test             # DOM, settings races, storage errors, lifecycle cleanup
 bun run test:browser # Computed styles and popup behavior in Chrome/Chromium
