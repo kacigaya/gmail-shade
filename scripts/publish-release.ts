@@ -31,25 +31,38 @@ export async function publishRelease(options: { tag: string; version: string; re
     if (result.code !== 0) throw new Error(`${args.slice(0, 3).join(' ')} failed: ${result.stderr}`);
     return result;
   };
-  const endpoint = `repos/${repo}/releases/tags/${tag}`;
-  let found = await run(['gh', 'api', endpoint]);
-  if (found.code !== 0) {
-    if (!/HTTP 404/.test(found.stderr)) throw new Error(`Release lookup failed: ${found.stderr}`);
+  // The by-tag REST endpoint finds published releases only. List releases so
+  // drafts remain visible both immediately after creation and on retries.
+  const endpoint = `repos/${repo}/releases?per_page=100`;
+  const read = async () => {
+    const pages: unknown = JSON.parse((await checked(['gh', 'api', '--paginate', '--slurp', endpoint])).stdout);
+    if (!Array.isArray(pages) || !pages.every(Array.isArray)) throw new Error('Invalid GitHub release list');
+    const matches = pages.flat().filter((value: unknown) => value && typeof value === 'object' && 'tag_name' in value && value.tag_name === tag);
+    if (matches.length > 1) throw new Error('Multiple releases found for the tag');
+    return matches.length ? release(matches[0]) : undefined;
+  };
+  const verifyTag = async () => {
+    const remote = await checked(['gh', 'api', `repos/${repo}/commits/${tag}`, '--jq', '.sha']);
+    if (remote.stdout.trim() !== sha) throw new Error('Remote release tag changed from the validated commit');
+  };
+  await verifyTag();
+  let draft = await read();
+  if (!draft) {
     await checked(['gh', 'release', 'create', tag, '--repo', repo, '--verify-tag', '--target', sha, '--draft', '--title', `Gmail Shade ${tag}`, '--generate-notes']);
-    found = await checked(['gh', 'api', endpoint]);
+    draft = await read();
   }
-  const draft = release(JSON.parse(found.stdout));
-  if (!draft.draft || draft.tag_name !== tag || draft.target_commitish !== sha) throw new Error('Refusing to change a published release or a draft for another commit');
+  if (!draft?.draft || draft.target_commitish !== sha) throw new Error('Refusing to change a published release or a draft for another commit');
   await checked(['gh', 'release', 'upload', tag, ...artifacts.map(({ path }) => path), '--repo', repo, '--clobber']);
-  const uploaded = release(JSON.parse((await checked(['gh', 'api', endpoint])).stdout));
-  if (!uploaded.draft || uploaded.target_commitish !== sha || uploaded.tag_name !== tag || uploaded.assets.length !== 2) throw new Error('Draft release changed or contains unexpected assets');
+  const uploaded = await read();
+  if (!uploaded?.draft || uploaded.target_commitish !== sha || uploaded.assets.length !== 2) throw new Error('Draft release changed or contains unexpected assets');
   for (const artifact of artifacts) {
     const asset = uploaded.assets.find(({ name }) => name === basename(artifact.path));
     if (!asset || asset.state !== 'uploaded' || asset.size !== artifact.size || (asset.digest && asset.digest !== artifact.digest)) throw new Error(`Release asset verification failed: ${basename(artifact.path)}`);
   }
+  await verifyTag();
   await checked(['gh', 'release', 'edit', tag, '--repo', repo, '--draft=false', '--latest']);
-  const published = release(JSON.parse((await checked(['gh', 'api', endpoint])).stdout));
-  if (published.draft || published.tag_name !== tag) throw new Error('Release publication was not confirmed');
+  const published = await read();
+  if (!published || published.draft) throw new Error('Release publication was not confirmed');
   console.log(`Published ${repo} ${tag} with both verified browser ZIPs`);
 }
 
