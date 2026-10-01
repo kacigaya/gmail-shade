@@ -15,6 +15,7 @@
     "postinstall": "wxt prepare",
     "test": "bun test",
     "test:browser": "bun scripts/test-browser.ts",
+    "test:firefox": "bun scripts/test-firefox.ts",
     "lint:firefox": "web-ext lint --source-dir .output/firefox-mv2"
   },
   "overrides": {

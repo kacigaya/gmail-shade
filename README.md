@@ -63,11 +63,16 @@ bun run build        # .output/chrome-mv3
 bun run zip          # packaged Chrome extension
 bun run zip:firefox   # packaged Firefox extension
 bun run lint:firefox  # Validate the built Firefox extension
+bun run test:firefox  # Native Firefox extension, sync storage, popup, and content script
 ```
 
 Browser tests require Chrome/Chromium on `PATH` or a Playwright Chromium cache. Set `CHROME_PATH`
 to select an executable. They run a local fixture with a controlled storage API; no Gmail login
-or network service is needed. Pull requests and release uploads run all these validation checks.
+or network service is needed. Native Firefox tests require Firefox on `PATH` or `FIREFOX_PATH`,
+run on Linux/macOS, and use a fresh temporary profile. They test the built popup and content
+script with real browser storage; only a disposable copy receives localhost test permissions.
+Pull requests run these validation checks. See [the Gmail checklist](tests/GMAIL.md) for
+verification against a signed-in mailbox; fixture tests cannot detect Gmail selector changes.
 
 ## Layout
 
