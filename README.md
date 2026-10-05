@@ -79,11 +79,16 @@ script with real browser storage; only a disposable copy receives localhost test
 Pull requests run these validation checks. See [the Gmail checklist](tests/GMAIL.md) for
 verification against a signed-in mailbox; fixture tests cannot detect Gmail selector changes.
 
-The dependency audit runs for pull requests, pushes to main, and weekly. It sends only exact
-public npm package names and versions from `bun.lock` to OSV, including development and optional
+The dependency audit runs for pull requests, pushes to main, and weekly. It sends only exact public
+npm package names and versions from `bun.lock` to OSV, including development and optional
 dependencies. Workspace and custom-registry packages are excluded. Active advisories fail the
-check; API failures also fail instead of reporting a clean scan. Advisory coverage is limited
-to OSV's database and does not establish whether a vulnerability is reachable in this extension.
+check; API failures also fail instead of reporting a clean scan. `EXCEPTIONS` in
+`scripts/audit-deps.ts` accepts one reviewed advisory, GHSA-86w9-cpqp-85rv in `node-forge`, which
+has no fixed release. It applies only while the lockfile reaches `node-forge` solely through the
+development-only `web-ext -> @devicefarmer/adbkit` chain and no production dependency reaches any
+link. Accepted findings are still printed. Remove the entry once a fixed release is available.
+Advisory coverage is limited to OSV's database and does not establish whether a vulnerability is
+reachable in this extension.
 
 ## Release
 

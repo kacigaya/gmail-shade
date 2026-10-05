@@ -25,6 +25,65 @@ export function publicPackages(text: string): PackageVersion[] {
   return [...packages.values()];
 }
 
+/**
+ * Reviewed advisories that stay accepted only along one exact development-only chain.
+ * The first link must be a root devDependency, each later link may only be required by
+ * the link before it, and the vulnerable package must be unreachable from production
+ * dependencies. Any other path, package, or advisory still fails the audit.
+ */
+export const EXCEPTIONS = [{
+  id: 'GHSA-86w9-cpqp-85rv',
+  chain: ['web-ext', '@devicefarmer/adbkit', 'node-forge'],
+  reason: 'web-ext uses adbkit for Firefox for Android only; no fixed node-forge release exists, and it is not in the extension ZIPs.',
+}];
+
+export interface DependencyGraph {
+  production: Set<string>;
+  development: Set<string>;
+  parents: Map<string, Set<string>>;
+}
+
+/** Name-level graph. Merging nested versions overapproximates edges, which only narrows exceptions. */
+export function dependencyGraph(text: string): DependencyGraph {
+  const lock = object(Bun.JSONC.parse(text));
+  const root = object(object(lock.workspaces)['']);
+  const names = (value: unknown) => value === undefined ? [] : Object.keys(object(value));
+  const children = new Map<string, Set<string>>();
+  const parents = new Map<string, Set<string>>();
+  for (const entry of Object.values(object(lock.packages))) {
+    if (!Array.isArray(entry) || typeof entry[0] !== 'string') throw new Error('Invalid lockfile package');
+    const name = entry[0].slice(0, entry[0].lastIndexOf('@'));
+    const meta = entry[2] === undefined || typeof entry[2] === 'string' ? {} : object(entry[2]);
+    for (const child of [...names(meta.dependencies), ...names(meta.optionalDependencies), ...names(meta.peerDependencies)]) {
+      if (!children.has(name)) children.set(name, new Set());
+      children.get(name)!.add(child);
+      if (!parents.has(child)) parents.set(child, new Set());
+      parents.get(child)!.add(name);
+    }
+  }
+  const production = new Set<string>();
+  const queue = [...names(root.dependencies), ...names(root.optionalDependencies), ...names(root.peerDependencies)];
+  for (let name = queue.pop(); name !== undefined; name = queue.pop()) {
+    if (production.has(name)) continue;
+    production.add(name);
+    queue.push(...children.get(name) ?? []);
+  }
+  return { production, development: new Set(names(root.devDependencies)), parents };
+}
+
+/** The exception that covers this finding, or undefined when the finding must fail the audit. */
+export function exceptionFor(graph: DependencyGraph, finding: { id: string; package: PackageVersion }) {
+  return EXCEPTIONS.find(({ id, chain }) =>
+    id === finding.id &&
+    chain.at(-1) === finding.package.name &&
+    graph.development.has(chain[0]!) &&
+    chain.every((name) => !graph.production.has(name)) &&
+    chain.slice(1).every((name, index) => {
+      const parents = graph.parents.get(name);
+      return parents?.size === 1 && parents.has(chain[index]!);
+    }));
+}
+
 async function requestJson(request: Request, url: string, init?: RequestInit): Promise<unknown> {
   for (let attempt = 0; ; attempt++) {
     try {
@@ -90,14 +149,21 @@ export async function audit(packages: PackageVersion[], request: Request = fetch
 
 if (import.meta.main) {
   try {
-    const packages = publicPackages(await Bun.file('bun.lock').text());
+    const lock = await Bun.file('bun.lock').text();
+    const packages = publicPackages(lock);
+    const graph = dependencyGraph(lock);
     const findings = await audit(packages);
+    let blocking = 0;
     for (const finding of findings) {
-      console.error(`${finding.package.name}@${finding.package.version}: ${finding.id} ${finding.aliases.join(', ')} https://osv.dev/vulnerability/${finding.id}`);
-      console.error(JSON.stringify({ severity: finding.details.severity, affected: finding.details.affected }));
+      const exception = exceptionFor(graph, finding);
+      const report = exception ? console.warn : console.error;
+      if (exception) report(`Accepted via ${exception.chain.join(' -> ')}: ${exception.reason}`);
+      else blocking++;
+      report(`${finding.package.name}@${finding.package.version}: ${finding.id} ${finding.aliases.join(', ')} https://osv.dev/vulnerability/${finding.id}`);
+      report(JSON.stringify({ severity: finding.details.severity, affected: finding.details.affected }));
     }
-    console.log(`OSV: ${packages.length} exact public npm resolutions scanned; ${findings.length} active findings`);
-    process.exitCode = findings.length ? 1 : 0;
+    console.log(`OSV: ${packages.length} exact public npm resolutions scanned; ${blocking} active findings, ${findings.length - blocking} accepted exceptions`);
+    process.exitCode = blocking ? 1 : 0;
   } catch (error) {
     console.error(`Dependency audit failed: ${String(error)}`);
     process.exitCode = 2;

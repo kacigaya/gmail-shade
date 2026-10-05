@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { audit, publicPackages } from '../scripts/audit-deps';
+import { audit, dependencyGraph, exceptionFor, publicPackages } from '../scripts/audit-deps';
 
 test('extracts exact public resolutions, excluding local and private registries', () => {
   const lock = `{"lockfileVersion":1,"packages":{
@@ -46,4 +46,24 @@ test('retries transient service errors without treating an outage as clean', asy
     return new Response('', { status: 503 });
   })).rejects.toThrow('HTTP 503');
   expect(attempts).toBe(3);
+});
+
+test('accepts the node-forge advisory only on its development-only chain', () => {
+  const lock = (root: string, extra = '') => `{"lockfileVersion":1,"workspaces":{"":{${root}}},"packages":{
+    "web-ext":["web-ext@10.6.0","",{"dependencies":{"@devicefarmer/adbkit":"3.3.9"}},"sha512-test"],
+    "@devicefarmer/adbkit":["@devicefarmer/adbkit@3.3.9","",{"dependencies":{"node-forge":"^1.3.1"}},"sha512-test"],
+    "node-forge":["node-forge@1.4.0","",{},"sha512-test"],${extra}
+  }}`;
+  const finding = { id: 'GHSA-86w9-cpqp-85rv', package: { name: 'node-forge', version: '1.4.0' } };
+  const dev = '"devDependencies":{"web-ext":"^10.5.0"}';
+  expect(exceptionFor(dependencyGraph(lock(dev)), finding)?.id).toBe('GHSA-86w9-cpqp-85rv');
+  expect(exceptionFor(dependencyGraph(lock(dev)), { ...finding, id: 'GHSA-other' })).toBeUndefined();
+  expect(exceptionFor(dependencyGraph(lock(dev)), { ...finding, package: { name: 'web-ext', version: '10.6.0' } })).toBeUndefined();
+  // A production path to any link, or a second parent of a later link, voids the exception.
+  expect(exceptionFor(dependencyGraph(lock('"dependencies":{"web-ext":"^10.5.0"}')), finding)).toBeUndefined();
+  expect(exceptionFor(dependencyGraph(lock(`"dependencies":{"app":"1.0.0"},${dev}`,
+    '"app":["app@1.0.0","",{"dependencies":{"node-forge":"^1.4.0"}},"sha512-test"],')), finding)).toBeUndefined();
+  expect(exceptionFor(dependencyGraph(lock(dev,
+    '"tool":["tool@1.0.0","",{"dependencies":{"node-forge":"^1.4.0"}},"sha512-test"],')), finding)).toBeUndefined();
+  expect(exceptionFor(dependencyGraph(lock('"devDependencies":{}')), finding)).toBeUndefined();
 });
