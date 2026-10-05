@@ -186,6 +186,57 @@ export const CSS: Record<keyof Settings, string> = {
       filter: invert(1) brightness(1.4) !important;
       opacity: 0.85 !important;
     }
+
+    /* Compose window title bar */
+    .nH.Hd .aCk,
+    .nH.Hd .aCk table,
+    .nH.Hd .aCk td {
+      background-color: #383838 !important;
+      color: #e8eaed !important;
+    }
+
+    .nH.Hd .aCk svg {
+      fill: #e8eaed !important;
+    }
+
+    /* Compose region: new message, reply, forward and full screen. Containers get
+       no text colour, so recipient chips, suggestion lists and the blue Send button
+       keep Gmail's own colours instead of inheriting light text on a light card. */
+    .aoI,
+    .aoI :is(.aoP, .I5, .fX, .GS, .bzf, .aoD, .iN, .GQ, .GP, .qz, .et, .aDh, .aDg, .IZ, .btC, .gU, .aX, .J-Z) {
+      background-color: #2c2c2c !important;
+      border-color: #555 !important;
+    }
+
+    /* From, To, Cc, Bcc, collapsed recipients, subject and toolbar labels */
+    .aoI :is(.gO, .aB, .az2, .oL, .J-JN-M-I-Jm, .J-Z-M-I-Jm, .aA3),
+    .aoI input:not([type="hidden"], [type="file"]) {
+      background-color: transparent !important;
+      color: #e8eaed !important;
+      caret-color: #e8eaed !important;
+    }
+
+    .aoI input::placeholder {
+      color: #9aa0a6 !important;
+    }
+
+    /* Message body. Only the editor is coloured, so text the writer colours keeps
+       its inline style, and the sent email does not inherit these colours. */
+    .aoI :is(.Am, .Ak) {
+      background-color: #2c2c2c !important;
+      color: #e8eaed !important;
+      caret-color: #e8eaed !important;
+    }
+
+    .aoI .Am a {
+      color: #8ab4f8;
+    }
+
+    /* Formatting and bottom toolbar icons are black sprites in Gmail */
+    .aoI :is(.aaA, .J-Z-M-I-JG, .J-JN-M-I-JG, .og, img.Y1) {
+      filter: invert(1) brightness(1.4) !important;
+      opacity: 0.85 !important;
+    }
   `,
   /** Gates DOM, not CSS: the toggle button is mounted by mountToggle. */
   showToggle: '',

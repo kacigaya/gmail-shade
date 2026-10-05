@@ -1,7 +1,7 @@
 import { browser } from 'wxt/browser';
 
 export interface Settings {
-  /** Dark styling for the opened-message reading pane. */
+  /** Dark styling for the reading pane and compose window. */
   darkMessages: boolean;
   /** Show the sun/moon toggle in Gmail's message toolbar. */
   showToggle: boolean;

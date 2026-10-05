@@ -51,6 +51,13 @@ describe('buildCss', () => {
     expect(css).toContain('.hx .hq.gt :not(.aZo, .aZo *)');
   });
 
+  test('styles the compose window without forcing colours inside the body', () => {
+    const css = buildCss(only('darkMessages'));
+    expect(css).toContain('.nH.Hd .aCk');
+    expect(css).toContain('.aoI :is(.Am, .Ak)');
+    expect(css).not.toContain('.aoI .Am *');
+  });
+
   test('is empty when dark messages are off', () => {
     expect(buildCss(only('showToggle')).trim()).toBe('');
     expect(buildCss(only()).trim()).toBe('');

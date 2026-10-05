@@ -15,7 +15,7 @@ export default defineConfig({
   manifest: ({ browser }) => ({
     name: 'Gmail Shade',
     description:
-      "Darkens Gmail's opened-message reading pane, which the native dark theme leaves white.",
+      "Darkens Gmail's reading pane and compose window, which the native dark theme leaves white.",
     permissions: ['storage'],
     host_permissions: ['*://mail.google.com/*'],
     ...(browser === 'firefox'

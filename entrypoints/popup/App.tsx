@@ -8,7 +8,7 @@ const TOGGLES: { key: keyof Settings; title: string; description: string }[] = [
   {
     key: 'darkMessages',
     title: 'Dark messages',
-    description: 'Darken the opened-message reading pane.',
+    description: 'Darken the reading pane and compose window.',
   },
   {
     key: 'showToggle',

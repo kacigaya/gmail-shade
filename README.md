@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Browser extension that finishes Gmail's dark theme.</strong><br>
-  <em>Darkens the opened-message reading pane, which Gmail leaves white.</em>
+  <em>Darkens the reading pane and compose window, which Gmail leaves white.</em>
 </p>
 
 <p align="center">
@@ -20,12 +20,13 @@
 ## What it does
 
 Gmail's dark theme covers the message list, sidebar, and interface, but opened messages still have
-a white reading pane, subject, body, and reply bar. Gmail Shade styles those areas to match.
+a white reading pane, subject, body, and reply bar, and the compose window stays white too. Gmail
+Shade styles those areas to match.
 
-| Toggle             | Effect                                                                             |
-| ------------------ | ---------------------------------------------------------------------------------- |
-| **Dark messages**  | Pane, subject, body, reply bar and "Show details" popup use `#e8eaed` on `#2c2c2c` |
-| **In-page toggle** | Shows a sun/moon button in the message toolbar that flips dark messages on and off  |
+| Toggle             | Effect                                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------------- |
+| **Dark messages**  | Pane, subject, body, reply bar, "Show details" popup and compose window use `#e8eaed` on `#2c2c2c` |
+| **In-page toggle** | Shows a sun/moon button in the message toolbar that flips dark messages on and off                  |
 
 Both settings are on by default. They live in browser `sync` storage, so preferences can follow
 your browser account across machines. Open Gmail tabs and the popup pick up changes without a
@@ -40,6 +41,9 @@ Designed emails that paint their own background keep their original text colours
 block. Detection uses computed styles, including stylesheet classes, legacy attributes, images,
 and gradients. Transparent backgrounds and positioning declarations do not count as painted
 cards. Plain emails get light text on the dark pane.
+
+The compose window colours only the editor, not the text inside it. Text you colour keeps its
+inline style, and sent emails do not carry the dark colours.
 
 ## Install
 
@@ -125,7 +129,7 @@ are currently exempt, but constructing the SVG through the DOM avoids relying on
 
 ## Limits
 
-The rules target Gmail's generated class names (`.nH.a98.iY`, `.hx .a3s`, `.btDi4d`). These names
+The rules target Gmail's generated class names (`.nH.a98.iY`, `.hx .a3s`, `.btDi4d`, `.aoI`). These names
 have been stable in practice, but Gmail does not guarantee them. A redesign may break the styles.
 
 The extension first looks for the last action button in the opened message
@@ -142,5 +146,8 @@ Different surfaces can change separate preferences safely. Simultaneous changes 
 preference follow browser storage's last-write behavior. Older extension versions still read the
 legacy object and will not see changes saved to the new independent keys.
 
-Only the reading pane is styled. Gmail's own dark theme handles the rest and must be enabled in
-Gmail's settings for the extension to look right.
+Only the reading pane and compose window are styled. Gmail's own dark theme handles the rest and
+must be enabled in Gmail's settings for the extension to look right.
+
+Quoted or pasted text with its own dark inline colour stays dark in the compose editor. Forcing
+light text there would also override colours the writer picked.

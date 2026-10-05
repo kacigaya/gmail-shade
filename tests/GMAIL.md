@@ -14,15 +14,19 @@ personal data, browser profiles, or credentials.
 3. Check synthetic HTML with white and dark cards, nested coloured text, transparent
    backgrounds, images, gradients, and `bgcolor` tables. Author colours should survive
    on painted blocks; plain text should stay readable on the dark pane.
-4. Navigate between messages and Gmail folders without reloading. Expand collapsed
+4. Open a new message, an inline reply, a pop-out, and a full-screen compose window. Check
+   the title bar, recipient fields and chips, subject, body, formatting toolbar, and bottom
+   toolbar icons. Colour some text, send it to the test mailbox, and confirm the received
+   email has no dark background or forced light text.
+5. Navigate between messages and Gmail folders without reloading. Expand collapsed
    messages and open a message in another tab. Check the toggle is present once per
    toolbar and follows rebuilt layouts.
-5. Change each popup preference independently. Check both Gmail tabs update, then
+6. Change each popup preference independently. Check both Gmail tabs update, then
    change the in-page dark toggle and confirm the popup follows. Reload the tabs and
    restart the browser; preferences should persist.
-6. Enable the operating system's reduced-motion preference. Popup switches should
+7. Enable the operating system's reduced-motion preference. Popup switches should
    change state immediately, retain their accessible names, and work with Tab/Space.
-7. With a message open, reload or disable the extension. Check for stale controls,
+8. With a message open, reload or disable the extension. Check for stale controls,
    page errors, and content-script exceptions. Reload Gmail after disabling to clear
    injected page state where the browser does not deliver invalidation cleanup.
 

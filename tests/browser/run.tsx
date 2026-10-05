@@ -67,6 +67,29 @@ async function run() {
   style.remove();
   fixture.remove();
 
+  const compose = document.createElement('div');
+  compose.innerHTML = `<style>.aoI, .Am { background: #fff; color: #222; }</style>
+    <div class="nH Hd" role="dialog"><div class="aCk"><table><tr><td id="compose-title">New message</td></tr></table></div>
+    <div class="aoI" role="region"><table class="GS"><tr class="bzf"><td>
+    <div style="background:#fff"><span id="compose-suggestion">Suggested contact</span></div></td></tr></table>
+    <input id="compose-subject" class="aoT" placeholder="Subject">
+    <div id="compose-body" class="Am" contenteditable="true">Typed <span id="compose-red" style="color:#b00">red</span></div>
+    </div></div>`;
+  document.body.append(compose);
+  const composeStyle = document.createElement('style');
+  composeStyle.textContent = buildCss({ darkMessages: true, showToggle: true });
+  document.head.append(composeStyle);
+  const background = (id: string) => getComputedStyle(element(id)).backgroundColor;
+  expect(background('compose-body') === 'rgb(44, 44, 44)', 'Compose body should be dark');
+  expect(color('compose-body') === 'rgb(232, 234, 237)', 'Compose body should get light text');
+  expect(color('compose-subject') === 'rgb(232, 234, 237)', 'Compose subject should get light text');
+  expect(background('compose-title') === 'rgb(56, 56, 56)', 'Compose title bar should be dark');
+  expect(color('compose-red') === 'rgb(187, 0, 0)', 'Text coloured by the writer must survive');
+  expect(color('compose-suggestion') === 'rgb(34, 34, 34)', 'Gmail popups in compose must not inherit light text');
+  composeStyle.remove();
+  expect(background('compose-body') === 'rgb(255, 255, 255)', 'Light mode should restore the compose window');
+  compose.remove();
+
   const popup = document.createElement('div');
   document.body.append(popup);
   const root = createRoot(popup);
