@@ -195,6 +195,11 @@ export const CSS: Record<keyof Settings, string> = {
       color: #e8eaed !important;
     }
 
+    /* Gmail colours the title itself, so the container colour does not reach it */
+    .nH.Hd .aCk :is(h2, h2 *) {
+      color: #e8eaed !important;
+    }
+
     .nH.Hd .aCk svg {
       fill: #e8eaed !important;
     }
@@ -203,7 +208,8 @@ export const CSS: Record<keyof Settings, string> = {
        no text colour, so recipient chips, suggestion lists and the blue Send button
        keep Gmail's own colours instead of inheriting light text on a light card. */
     .aoI,
-    .aoI :is(.aoP, .I5, .fX, .GS, .bzf, .aoD, .iN, .GQ, .GP, .qz, .et, .aDh, .aDg, .IZ, .btC, .gU, .aX, .J-Z) {
+    .aoI :is(.aoP, .I5, .fX, .GS, .bzf, .aoD, .iN, .GQ, .GP, .qz, .et, .aDh, .aDg, .IZ, .btC, .gU, .aX, .J-Z),
+    .aoI :is(.ZyRVue, .An, .Ap, .Aq, .Ar, .At, .Au, .aO7, .bv8, .bA3) {
       background-color: #2c2c2c !important;
       border-color: #555 !important;
     }
@@ -233,7 +239,7 @@ export const CSS: Record<keyof Settings, string> = {
     }
 
     /* Formatting and bottom toolbar icons are black sprites in Gmail */
-    .aoI :is(.aaA, .J-Z-M-I-JG, .J-JN-M-I-JG, .og, img.Y1) {
+    .aoI :is(.aaA, .dv, .J-Z-M-I-JG, .J-JN-M-I-JG, .og, img.Y1) {
       filter: invert(1) brightness(1.4) !important;
       opacity: 0.85 !important;
     }
