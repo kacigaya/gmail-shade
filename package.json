@@ -2,7 +2,7 @@
   "name": "gmail-shade",
   "description": "Darkens Gmail's reading pane and compose window, which the native dark theme leaves white.",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "scripts": {
     "dev": "wxt",
