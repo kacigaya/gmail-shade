@@ -222,6 +222,14 @@ export const CSS: Record<keyof Settings, string> = {
       caret-color: #e8eaed !important;
     }
 
+    /* Recipient field wrappers paint a white box around the To, Cc and Bcc inputs.
+       Matched by the input they hold because their class names churn. Chips and the
+       suggestion list hold no input, so they keep Gmail's colours. Kept as its own
+       rule so a browser without :has() drops only this one. */
+    .aoI :is(div, span):has(input:is([role="combobox"], .agP)) {
+      background-color: transparent !important;
+    }
+
     .aoI input::placeholder {
       color: #9aa0a6 !important;
     }

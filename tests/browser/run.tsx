@@ -68,9 +68,11 @@ async function run() {
   fixture.remove();
 
   const compose = document.createElement('div');
-  compose.innerHTML = `<style>.aoI, .Am, .Ar { background: #fff; color: #222; } .aYF { color: #0b57d0; }</style>
+  compose.innerHTML = `<style>.aoI, .Am, .Ar, .aH9, .xx { background: #fff; color: #222; } .aYF { color: #0b57d0; }</style>
     <div class="nH Hd" role="dialog"><div class="aCk"><table><tr><td id="compose-title"><h2><span id="compose-heading" class="aYF">New message</span></h2></td></tr></table></div>
     <div class="aoI" role="region"><table class="GS"><tr class="bzf"><td>
+    <div id="compose-recipients" class="xx"><div id="compose-chip" class="xx" role="option">a@example.com</div>
+    <div id="compose-to" class="aH9"><input class="agP aFw" role="combobox"></div></div>
     <div style="background:#fff"><span id="compose-suggestion">Suggested contact</span></div></td></tr></table>
     <input id="compose-subject" class="aoT" placeholder="Subject">
     <div id="compose-wrapper" class="Ar Au"><div id="compose-body" class="Am" contenteditable="true">Typed <span id="compose-red" style="color:#b00">red</span></div></div>
@@ -86,6 +88,9 @@ async function run() {
   expect(background('compose-title') === 'rgb(56, 56, 56)', 'Compose title bar should be dark');
   expect(color('compose-heading') === 'rgb(232, 234, 237)', 'Compose title text should be light');
   expect(background('compose-wrapper') === 'rgb(44, 44, 44)', 'Editor wrappers should not paint white around the body');
+  expect(background('compose-to') === 'rgba(0, 0, 0, 0)', 'Recipient input wrapper should not paint white');
+  expect(background('compose-recipients') === 'rgba(0, 0, 0, 0)', 'Recipient field should not paint white');
+  expect(background('compose-chip') === 'rgb(255, 255, 255)', 'Recipient chips keep their own background');
   expect(color('compose-red') === 'rgb(187, 0, 0)', 'Text coloured by the writer must survive');
   expect(color('compose-suggestion') === 'rgb(34, 34, 34)', 'Gmail popups in compose must not inherit light text');
   composeStyle.remove();
