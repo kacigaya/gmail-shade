@@ -51,17 +51,19 @@ function App() {
         {TOGGLES.map(({ key, title, description }, index) => (
           <div key={key}>
             {index > 0 && <Separator />}
-            <Label className="w-full items-start justify-between gap-3 py-3 text-sm/4">
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span>{title}</span>
-                <span className="font-normal text-muted-foreground text-xs">{description}</span>
-              </span>
+            <div className="flex items-start justify-between gap-3 py-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <Label htmlFor={`${key}-switch`} className="text-sm/4">{title}</Label>
+                <p id={`${key}-description`} className="text-muted-foreground text-xs">{description}</p>
+              </div>
               <Switch
+                id={`${key}-switch`}
+                aria-describedby={`${key}-description`}
                 checked={settings[key]}
                 disabled={!loaded}
                 onCheckedChange={(checked) => toggle(key, checked)}
               />
-            </Label>
+            </div>
           </div>
         ))}
       </div>

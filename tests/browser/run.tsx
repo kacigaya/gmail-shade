@@ -114,8 +114,12 @@ async function run() {
   await waitFor(() => popup.querySelector('[role=switch]')?.getAttribute('aria-checked') === 'false', 'Popup did not receive remote settings');
   const switches = popup.querySelectorAll<HTMLElement>('[role=switch]');
   expect(switches[0]!.getAttribute('aria-checked') === 'false', 'Popup should follow remote settings');
-  switches[1]!.click();
-  await waitFor(() => api.values.showToggle === false, 'Popup did not save the preference');
+  const referenced = (control: HTMLElement, attribute: string) =>
+    document.getElementById(control.getAttribute(attribute) ?? '')?.textContent;
+  expect(referenced(switches[0]!, 'aria-labelledby') === 'Dark messages', 'Switch name should be its title only');
+  expect(referenced(switches[0]!, 'aria-describedby') === 'Darken the reading pane and compose window.', 'Switch should be described by its help text');
+  popup.querySelector<HTMLLabelElement>('label[for=showToggle-switch]')!.click();
+  await waitFor(() => api.values.showToggle === false, 'Popup label did not toggle and save the preference');
   expect(api.values.darkMessages === false && api.values.showToggle === false, 'Changing one preference should preserve another');
   api.failWrite = true;
   switches[1]!.click();
