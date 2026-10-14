@@ -28,6 +28,13 @@ Shade styles those areas to match.
 | **Dark messages**  | Pane, subject, body, reply bar, "Show details" popup and compose window use `#e8eaed` on `#2c2c2c` |
 | **In-page toggle** | Shows a sun/moon button in the message toolbar that flips dark messages on and off                  |
 
+The popup follows the browser's light or dark preference:
+
+<p align="center">
+  <img src="assets/popup-light.png" alt="Gmail Shade popup in light mode with Dark messages and In-page toggle switched on" width="320">
+  <img src="assets/popup-dark.png" alt="Gmail Shade popup in dark mode with Dark messages and In-page toggle switched on" width="320">
+</p>
+
 Both settings are on by default. They live in browser `sync` storage, so preferences can follow
 your browser account across machines. Open Gmail tabs and the popup pick up changes without a
 reload. Each preference is saved independently. Existing preferences from the older settings
