@@ -12,7 +12,7 @@
         "tailwind-merge": "^3.7.0",
       },
       "devDependencies": {
-        "@happy-dom/global-registrator": "^21.0.1",
+        "@happy-dom/global-registrator": "^21.0.3",
         "@tailwindcss/vite": "^4.3.3",
         "@types/bun": "1.4.3",
         "@types/react": "^19.3.0",
@@ -93,7 +93,7 @@
 
     "@fregante/relaxed-json": ["@fregante/relaxed-json@2.0.0", "", {}, "sha512-PyUXQWB42s4jBli435TDiYuVsadwRHnMc27YaLouINktvTWsL3FcKrRMGawTayFk46X+n5bE23RjUTWQwrukWw=="],
 
-    "@happy-dom/global-registrator": ["@happy-dom/global-registrator@21.0.1", "", { "dependencies": { "@types/node": ">=20.0.0", "happy-dom": "^21.0.1" } }, "sha512-wr/Rpo2cUXb9hOXdpsA3jJvite0YR+jWz3j5XNuXzzBoKpI17U4nzrPNykFu3iUNxT7WWQm/YxpW/aEqfgaZMA=="],
+    "@happy-dom/global-registrator": ["@happy-dom/global-registrator@21.0.3", "", { "dependencies": { "@types/node": ">=20.0.0", "happy-dom": "^21.0.3" } }, "sha512-0LhVbq+Bjw8H0MuByKtXhuUr4JYKY29PBP6Czhkv/ij6C+zHDihZXSpP56HNKGImf5jur6uJDr46b0EiyZ2NvQ=="],
 
     "@humanfs/core": ["@humanfs/core@0.19.2", "", { "dependencies": { "@humanfs/types": "^0.15.0" } }, "sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA=="],
 
